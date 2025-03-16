@@ -80,10 +80,8 @@ class Model:
         """
         return self.modelo.predict(x)
 
-
-model = keras.Sequential([
-    layers.Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
-    layers.Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
-    layers.Dense(1)
-])
-
+def main():
+    ...
+    
+if __name__ == '__main__':
+    main()
