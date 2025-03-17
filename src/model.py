@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List, Tuple
+from dataclasses import dataclass, field
+from typing import List, Tuple, Optional
 
 import tensorflow as tf
 from tensorflow import keras
@@ -11,11 +11,14 @@ class Model:
     # Se crea el modelo de la red neuronal
     input_shape: Tuple[int]
     num_capas: int
-    neuronas_por_capa: List[int]
-    funcniones_activacion: List[str]
-    optimizador: str = "adam"
+    neuronas_por_capa: List[int] = field(default_factory=list)  # Lista vacía por defecto
+    funciones_activacion: List[str] = field(default_factory=list)  # Lista vacía por defecto
+    funcion_salida: str = "tanh"
+    cargar_modelo: bool = False
+    optimizador: str = "sgd"
     loss: str = "mean_squared_error"
-    metrics: List[str] = ["mean_absolute_error"]
+    metrics: List[str] = field(default_factory=lambda: ["mean_absolute_error"])  # Usar default_factory
+    ruta_modelo: Optional[str] = "..\\models\\modelo.h5"
     
     def _construir_modelo(self) -> models.Sequential:
         """
@@ -31,15 +34,18 @@ class Model:
             modelo.add(layers.Dense(self.neuronas_por_capa[i], activation=self.funciones_activacion[i]))
 
         # Capa de salida 
-        modelo.add(layers.Dense(1, activation='tanh'))
+        modelo.add(layers.Dense(1, activation=self.funcion_salida))
 
         # Compilar el modelo
-        modelo.compile(optimizer=self.optimizer, loss=self.loss, metrics=self.metrics)
+        modelo.compile(optimizer=self.optimizador, loss=self.loss, metrics=self.metrics)
 
         return modelo
     
     def __post_init__(self):
-        self.model = self._construir_modelo()
+        if self.cargar_modelo:
+            self.modelo = keras.models.load_model(self.ruta_modelo)
+        else:
+            self.modelo = self._construir_modelo()
         
     def resumen(self):
         """
@@ -79,6 +85,15 @@ class Model:
         - x: Datos para predecir.
         """
         return self.modelo.predict(x)
+    
+    def guardar_modelo(self):
+        """
+        Guarda el modelo en un archivo.
+
+        Parámetros:
+        - ruta: Ruta donde se guardará el modelo.
+        """
+        self.modelo.save(self.ruta_modelo)
 
 def main():
     ...
